@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/blevesearch/bleve"
 	"github.com/blevesearch/bleve/search/query"
 )
 
@@ -134,7 +135,9 @@ func BenchmarkPercolator_1000Rules(b *testing.B) {
 }
 
 func createRoutes(n int) *Percolator {
-	rp := &Percolator{}
+	rp := &Percolator{
+		mapping: bleve.NewIndexMapping(),
+	}
 
 	rules := make(Rules, n)
 	for i := 0; i < n - 1; i++ {

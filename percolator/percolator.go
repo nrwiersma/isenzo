@@ -5,12 +5,22 @@ import (
 
 	"github.com/blevesearch/bleve"
 	"github.com/blevesearch/bleve/index/store/gtreap"
+	"github.com/blevesearch/bleve/mapping"
 )
 
 // Percolator represents a percolator instance.
 type Percolator struct {
 	rules *Rules
 	lock  sync.RWMutex
+
+	mapping mapping.IndexMapping
+}
+
+// New creates a new Percolator.
+func New() *Percolator {
+	return &Percolator{
+		mapping: bleve.NewIndexMapping(),
+	}
 }
 
 // SetRules sets the Rules on the Percoaltor.
@@ -23,9 +33,7 @@ func (rp *Percolator) SetRules(rules *Rules) {
 
 // Process percolates a document and applies the changes on the first matching Rule.
 func (rp *Percolator) Process(data map[string]interface{}) (map[string]interface{}, []error) {
-	mapping := bleve.NewIndexMapping()
-
-	index, err := bleve.NewUsing("", mapping, bleve.Config.DefaultIndexType, gtreap.Name, nil)
+	index, err := bleve.NewUsing("", rp.mapping, bleve.Config.DefaultIndexType, gtreap.Name, nil)
 	if err != nil {
 		return data, []error{err}
 	}
