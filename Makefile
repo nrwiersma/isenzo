@@ -1,12 +1,6 @@
-.PHONY: ci test vet bench
+include github.com/msales/make/golang
 
-ci: test vet
-
-test:
-	go test $(shell go list ./... | grep -v /vendor/)
-
-vet:
-	go vet $(shell go list ./... | grep -v /vendor/)
-
+# Run all benchmarks
 bench:
-	go test -bench=. $(shell go list ./... | grep -v /vendor/)
+	@go test -bench=. $(shell go list ./... | grep -v /vendor/)
+.PHONY: bench
