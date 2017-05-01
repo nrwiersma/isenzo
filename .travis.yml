@@ -6,7 +6,7 @@ go:
 
 before_install:
   - go get -u github.com/FiloSottile/gvt
-  - go get github.com/tj/mmake
+  - go get github.com/tj/mmake/cmd/mmake
   - go get github.com/mattn/goveralls
   - go get golang.org/x/tools/cmd/cover
 
