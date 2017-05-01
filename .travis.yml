@@ -6,14 +6,13 @@ go:
 
 before_install:
   - go get -u github.com/FiloSottile/gvt
-  - go get github.com/tj/mmake/cmd/mmake
   - go get github.com/mattn/goveralls
   - go get golang.org/x/tools/cmd/cover
 
 script:
   - gvt restore
-  - mmake vet
-  - mmake test
+  - go vet $(shell go list ./... | grep -v /vendor/)
+  - go test -cover $(shell go list ./... | grep -v /vendor/)
   - $HOME/gopath/bin/goveralls -repotoken $COVERALLS_TOKEN
 
 notifications:
