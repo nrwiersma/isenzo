@@ -11,6 +11,12 @@ and acts on the matched query/queries.
 
 **Note:** This is still a work in progress.
 
+### TODO
+
+- [x] Matchers
+- [ ] Pre-search
+- [ ] Decomposition
+
 ## License
 
 MIT
