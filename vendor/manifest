@@ -10,6 +10,14 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/bcampbell/qs",
+			"repository": "https://github.com/bcampbell/qs",
+			"vcs": "git",
+			"revision": "15caa99abd011f2bcb4eab190c5354a323c1f0c0",
+			"branch": "master",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/blevesearch/bleve",
 			"repository": "https://github.com/blevesearch/bleve",
 			"vcs": "git",

@@ -4,9 +4,11 @@ import (
 	"sync"
 	"time"
 
+	"github.com/bcampbell/qs"
 	"github.com/blevesearch/bleve"
 	"github.com/blevesearch/bleve/search/query"
 	"github.com/nrwiersma/isenzo/matcher"
+	"github.com/nrwiersma/isenzo/presearcher"
 )
 
 type optionsFunc func(*Percolator)
@@ -23,13 +25,13 @@ type Percolator struct {
 	cache     map[string]query.Query
 	cacheLock sync.RWMutex
 
-	queryIndex bleve.Index
+	queryIndex presearcher.Index
 	matcher    matcher.Factory
 }
 
 // NewPercolator creates a new Percolator.
 func NewPercolator(opts ...optionsFunc) (*Percolator, error) {
-	queryIndex, err := bleve.NewMemOnly(bleve.NewIndexMapping())
+	queryIndex, err := presearcher.NewIndex(bleve.NewIndexMapping())
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +58,10 @@ func (p *Percolator) Update(qrys []*Query) {
 	defer p.cacheLock.Unlock()
 
 	for _, qry := range qrys {
-		p.cache[qry.Id] = bleve.NewQueryStringQuery(qry.Query)
+		q, _ := qs.Parse(qry.Query)
+		//TODO: Handle this error
+
+		p.cache[qry.Id] = q
 	}
 }
 
