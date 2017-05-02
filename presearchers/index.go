@@ -1,4 +1,4 @@
-package presearcher
+package presearchers
 
 import (
 	"context"
@@ -17,9 +17,8 @@ import (
 )
 
 var (
-	ErrorEmptyID            = errors.New("document ID cannot be empty")
-	ErrorIndexClosed        = errors.New("index is closed")
-	ErrorUnknownStorageType = errors.New("unknown storage type")
+	ErrorEmptyID     = errors.New("document ID cannot be empty")
+	ErrorIndexClosed = errors.New("index is closed")
 )
 
 type Index struct {
@@ -30,28 +29,31 @@ type Index struct {
 }
 
 // NewIndex creates a memory-only index.
-func NewIndex(mapping mapping.IndexMapping) (Index, error) {
+func NewIndex(mapping mapping.IndexMapping) (*Index, error) {
 	// First validate the mapping
 	err := mapping.Validate()
 	if err != nil {
 		return nil, err
 	}
 
-	i := Index{
+	i := &Index{
 		m: mapping,
 	}
 
+	// Store configuration
+	storeConfig := map[string]interface{}{}
+	storeConfig["path"] = ""
+	storeConfig["create_if_missing"] = false
+	storeConfig["error_if_exists"] = false
+
 	// open the index
 	indexTypeConstructor := registry.IndexTypeConstructorByName(bleve.Config.DefaultIndexType)
-	i.i, err = indexTypeConstructor(bleve.Config.DefaultMemKVStore, nil, index.NewAnalysisQueue(4))
+	i.i, err = indexTypeConstructor(bleve.Config.DefaultMemKVStore, storeConfig, index.NewAnalysisQueue(4))
 	if err != nil {
 		return nil, err
 	}
 	err = i.i.Open()
 	if err != nil {
-		if err == index.ErrorUnknownStorageType {
-			return nil, ErrorUnknownStorageType
-		}
 		return nil, err
 	}
 
@@ -99,12 +101,16 @@ func (i *Index) Delete(id string) (err error) {
 }
 
 // Search executes a search request operation.
-func (i *Index) Search(qry query.Query, col search.Collector) (took time.Duration, err error) {
+func (i *Index) Search(qry query.Query, col search.Collector) (sr *bleve.SearchResult, err error) {
 	return i.SearchInContext(context.Background(), qry, col)
 }
 
 // SearchInContext executes a search request operation within the provided Context.
-func (i *Index) SearchInContext(ctx context.Context, qry query.Query, col search.Collector) (took time.Duration, err error) {
+func (i *Index) SearchInContext(
+	ctx context.Context,
+	qry query.Query,
+	collector search.Collector,
+) (sr *bleve.SearchResult, err error) {
 	i.mutex.RLock()
 	defer i.mutex.RUnlock()
 
@@ -135,12 +141,23 @@ func (i *Index) SearchInContext(ctx context.Context, qry query.Query, col search
 		}
 	}()
 
-	err = col.Collect(ctx, searcher, indexReader)
+	err = collector.Collect(ctx, searcher, indexReader)
 	if err != nil {
 		return nil, err
 	}
 
-	return time.Since(searchStart), nil
+	return &bleve.SearchResult{
+		Status: &bleve.SearchStatus{
+			Total:      1,
+			Failed:     0,
+			Successful: 1,
+			Errors:     make(map[string]error),
+		},
+		Total:    collector.Total(),
+		MaxScore: collector.MaxScore(),
+		Took:     time.Since(searchStart),
+		Facets:   collector.FacetResults(),
+	}, nil
 }
 
 // Close closes the index.

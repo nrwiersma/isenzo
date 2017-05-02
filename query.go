@@ -7,8 +7,8 @@ type Query struct {
 }
 
 // NewQuery creates a new Query.
-func NewQuery(id, query string) *Query {
-	return &Query{
+func NewQuery(id, query string) Query {
+	return Query{
 		Id:    id,
 		Query: query,
 	}

@@ -7,16 +7,23 @@ import (
 	"github.com/bcampbell/qs"
 	"github.com/blevesearch/bleve"
 	"github.com/blevesearch/bleve/search/query"
-	"github.com/nrwiersma/isenzo/matcher"
-	"github.com/nrwiersma/isenzo/presearcher"
+	"github.com/nrwiersma/isenzo/matchers"
+	"github.com/nrwiersma/isenzo/presearchers"
 )
 
 type optionsFunc func(*Percolator)
 
 // WithMatcherFactory sets the matcher factory on the Percolator.
-func WithMatcherFactory(matcher matcher.Factory) optionsFunc {
+func WithMatcherFactory(matcher matchers.Factory) optionsFunc {
 	return func(p *Percolator) {
 		p.matcher = matcher
+	}
+}
+
+// WithPresearcher sets the presearcher on the Percolator.
+func WithPresearcher(presearcher presearchers.Presearcher) optionsFunc {
+	return func(p *Percolator) {
+		p.presearcher = presearcher
 	}
 }
 
@@ -25,13 +32,14 @@ type Percolator struct {
 	cache     map[string]query.Query
 	cacheLock sync.RWMutex
 
-	queryIndex presearcher.Index
-	matcher    matcher.Factory
+	queryIndex  *presearchers.Index
+	presearcher presearchers.Presearcher
+	matcher     matchers.Factory
 }
 
 // NewPercolator creates a new Percolator.
 func NewPercolator(opts ...optionsFunc) (*Percolator, error) {
-	queryIndex, err := presearcher.NewIndex(bleve.NewIndexMapping())
+	queryIndex, err := presearchers.NewIndex(bleve.NewIndexMapping())
 	if err != nil {
 		return nil, err
 	}
@@ -46,23 +54,31 @@ func NewPercolator(opts ...optionsFunc) (*Percolator, error) {
 	}
 
 	if p.matcher == nil {
-		p.matcher = matcher.IndexMatcherFactory(bleve.NewIndexMapping())
+		p.matcher = matchers.NewIndexMatcherFactory(bleve.NewIndexMapping())
+	}
+
+	if p.presearcher == nil {
+		p.presearcher = &presearchers.TermPresearcher{}
 	}
 
 	return p, nil
 }
 
-// Update sets the Rules on the Percolator.
-func (p *Percolator) Update(qrys []*Query) {
+// Update sets the queries on the Percolator.
+func (p *Percolator) Update(qrys []Query) error {
 	p.cacheLock.Lock()
 	defer p.cacheLock.Unlock()
 
 	for _, qry := range qrys {
-		q, _ := qs.Parse(qry.Query)
-		//TODO: Handle this error
+		q, err := qs.Parse(qry.Query)
+		if err != nil {
+			return err
+		}
 
 		p.cache[qry.Id] = q
 	}
+
+	return nil
 }
 
 // Matches matches a document and applies the changes on the first matching Query.
@@ -71,7 +87,7 @@ func (p *Percolator) Match(doc map[string]interface{}) (*Results, error) {
 
 	//TODO: Pre-search queries
 
-	m, err := p.matcher(doc)
+	m, err := p.matcher.New(doc)
 	if err != nil {
 		return nil, err
 	}

@@ -1,4 +1,4 @@
-package matcher
+package matchers_test
 
 import (
 	"testing"
@@ -6,11 +6,12 @@ import (
 
 	"github.com/blevesearch/bleve"
 	"github.com/blevesearch/bleve/search/query"
+	"github.com/nrwiersma/isenzo/matchers"
 )
 
 func TestParallelMatcher(t *testing.T) {
-	f := ParallelMatcherFactory(waitMatcherFactory(), 2)
-	m, err := f(map[string]interface{}{})
+	f :=  matchers.NewParallelMatcherFactory(newWaitMatcherFactory(), 10)
+	m, err := f.New(map[string]interface{}{})
 	if err != nil {
 		t.Fatalf("unexpected err; got %v", err)
 	}
@@ -29,16 +30,24 @@ func TestParallelMatcher(t *testing.T) {
 	}
 }
 
-type waitMatcher struct {
-	ids []string
+type waitMatcherFactory struct {}
+
+func newWaitMatcherFactory() matchers.Factory {
+	return &waitMatcherFactory{}
 }
 
-func waitMatcherFactory() Factory {
-	return func(doc map[string]interface{}) (Matcher, error) {
-		return &waitMatcher{
-			ids: make([]string, 0),
-		}, nil
-	}
+func (f waitMatcherFactory) New(doc interface{}) (matchers.Matcher, error) {
+	return &waitMatcher{
+		ids: make([]string, 0),
+	}, nil
+}
+
+func (f waitMatcherFactory) Map(doc interface{}) interface{} {
+	return doc
+}
+
+type waitMatcher struct {
+	ids []string
 }
 
 // Match matches a query with the matcher.

@@ -1,16 +1,16 @@
-package matcher_test
+package matchers_test
 
 import (
 	"testing"
 
 	"github.com/blevesearch/bleve/mapping"
 	"github.com/blevesearch/bleve/search/query"
-	"github.com/nrwiersma/isenzo/matcher"
+	"github.com/nrwiersma/isenzo/matchers"
 )
 
 func TestIndexMatcher(t *testing.T) {
-	f := matcher.IndexMatcherFactory(mapping.NewIndexMapping())
-	m, err := f(map[string]interface{}{"foo": "bar"})
+	f := matchers.NewIndexMatcherFactory(mapping.NewIndexMapping())
+	m, err := f.New(map[string]interface{}{"foo": "bar"})
 	if err != nil {
 		t.Fatalf("unexpected err; got %v", err)
 	}
@@ -38,8 +38,8 @@ func TestIndexMatcher(t *testing.T) {
 }
 
 func TestIndexMatcher_WithErrors(t *testing.T) {
-	f := matcher.IndexMatcherFactory(mapping.NewIndexMapping())
-	m, err := f(map[string]interface{}{"foo": "bar"})
+	f := matchers.NewIndexMatcherFactory(mapping.NewIndexMapping())
+	m, err := f.New(map[string]interface{}{"foo": "bar"})
 	if err != nil {
 		t.Fatalf("unexpected err; got %v", err)
 	}

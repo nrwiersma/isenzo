@@ -7,20 +7,27 @@ import (
 	"github.com/blevesearch/bleve"
 	"github.com/blevesearch/bleve/analysis/analyzer/keyword"
 	"github.com/nrwiersma/isenzo"
-	"github.com/nrwiersma/isenzo/matcher"
+	"github.com/nrwiersma/isenzo/matchers"
 )
 
 func TestPercolator_Match(t *testing.T) {
-	rp, _ := isenzo.NewPercolator()
-	rp.Update([]*isenzo.Query{
+	p, err := isenzo.NewPercolator()
+	if err != nil {
+		t.Fatalf("unexpected err; got %v", err)
+	}
+
+	err = p.Update([]isenzo.Query{
 		isenzo.NewQuery("1", "foo:bar"),
 		isenzo.NewQuery("2", "bar"),
 		isenzo.NewQuery("3", "test"),
 	})
+	if err != nil {
+		t.Fatalf("unexpected err; got %v", err)
+	}
 
 	data := map[string]interface{}{"foo": "bar"}
 
-	results, err := rp.Match(data)
+	results, err := p.Match(data)
 	if err != nil {
 		t.Fatalf("unexpected err; got %v", err)
 	}
@@ -34,20 +41,16 @@ func TestPercolator_Match(t *testing.T) {
 	}
 }
 
-func TestPercolator_MatchWithErrors(t *testing.T) {
-	rp, _ := isenzo.NewPercolator()
-	rp.Update([]*isenzo.Query{
-		isenzo.NewQuery("1", "+-"),
-	})
-
-	data := map[string]interface{}{"foo": "bar"}
-
-	results, err := rp.Match(data)
+func TestPercolator_UpdateWithErrors(t *testing.T) {
+	p, err := isenzo.NewPercolator()
 	if err != nil {
 		t.Fatalf("unexpected err; got %v", err)
 	}
 
-	if len(results.Errs) != 1 {
+	err = p.Update([]isenzo.Query{
+		isenzo.NewQuery("1", "+-"),
+	})
+	if err == nil {
 		t.Fatal("expected errors; got none")
 	}
 }
@@ -123,10 +126,10 @@ func createRoutes(n int) *isenzo.Percolator {
 	defaultMapping.StoreDynamic = false
 
 	rp, _ := isenzo.NewPercolator(
-		isenzo.WithMatcherFactory(matcher.IndexMatcherFactory(defaultMapping)),
+		isenzo.WithMatcherFactory(matchers.NewIndexMatcherFactory(defaultMapping)),
 	)
 
-	qrys := make([]*isenzo.Query, n)
+	qrys := make([]isenzo.Query, n)
 	for i := 0; i < n-1; i++ {
 		qrys[i] = isenzo.NewQuery(strconv.Itoa(i), "baz:bat")
 	}

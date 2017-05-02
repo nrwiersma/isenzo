@@ -1,11 +1,17 @@
-package matcher
+package matchers
 
 import (
 	"github.com/blevesearch/bleve/search/query"
 )
 
 // Factory represents a matcher factory
-type Factory func(doc map[string]interface{}) (Matcher, error)
+type Factory interface {
+	// New creates a new query matcher.
+	New(doc interface{}) (Matcher, error)
+
+	// Map maps a document for the matcher.
+	Map(doc interface{}) interface{}
+}
 
 // Matcher represents a query matcher
 type Matcher interface {
