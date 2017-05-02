@@ -100,6 +100,31 @@ func (i *Index) Delete(id string) (err error) {
 	return
 }
 
+// DocCount returns the number of documents in the
+// index.
+func (i *Index) DocCount() (count uint64, err error) {
+	i.mutex.RLock()
+	defer i.mutex.RUnlock()
+
+	if !i.open {
+		return 0, ErrorIndexClosed
+	}
+
+	// open a reader for this search
+	indexReader, err := i.i.Reader()
+	if err != nil {
+		return 0, fmt.Errorf("error opening index reader %v", err)
+	}
+	defer func() {
+		if cerr := indexReader.Close(); err == nil && cerr != nil {
+			err = cerr
+		}
+	}()
+
+	count, err = indexReader.DocCount()
+	return
+}
+
 // Search executes a search request operation.
 func (i *Index) Search(qry query.Query, col search.Collector) (sr *bleve.SearchResult, err error) {
 	return i.SearchInContext(context.Background(), qry, col)
@@ -115,6 +140,10 @@ func (i *Index) SearchInContext(
 	defer i.mutex.RUnlock()
 
 	searchStart := time.Now()
+
+	if !i.open {
+		return nil, ErrorIndexClosed
+	}
 
 	// Open a reader for this search
 	indexReader, err := i.i.Reader()
