@@ -10,50 +10,50 @@ import (
 	"github.com/nrwiersma/isenzo/matchers"
 )
 
-//func TestPercolator_Match(t *testing.T) {
-//	p, err := isenzo.NewPercolator()
-//	if err != nil {
-//		t.Fatalf("unexpected err; got %v", err)
-//	}
-//
-//	err = p.Update([]isenzo.Query{
-//		isenzo.NewQuery("1", "foo:bar"),
-//		isenzo.NewQuery("2", "bar"),
-//		isenzo.NewQuery("3", "test"),
-//	})
-//	if err != nil {
-//		t.Fatalf("unexpected err; got %v", err)
-//	}
-//
-//	data := map[string]interface{}{"foo": "bar"}
-//
-//	results, err := p.Match(data)
-//	if err != nil {
-//		t.Fatalf("unexpected err; got %v", err)
-//	}
-//
-//	if len(results.Errs) != 0 {
-//		t.Fatalf("expected no errors; got %v", results.Errs)
-//	}
-//
-//	if len(results.Ids) != 2 {
-//		t.Fatalf("expected %d results; got %v", 2, len(results.Ids))
-//	}
-//}
-//
-//func TestPercolator_UpdateWithErrors(t *testing.T) {
-//	p, err := isenzo.NewPercolator()
-//	if err != nil {
-//		t.Fatalf("unexpected err; got %v", err)
-//	}
-//
-//	err = p.Update([]isenzo.Query{
-//		isenzo.NewQuery("1", "+-"),
-//	})
-//	if err == nil {
-//		t.Fatal("expected errors; got none")
-//	}
-//}
+func TestPercolator_Match(t *testing.T) {
+	p, err := isenzo.NewPercolator()
+	if err != nil {
+		t.Fatalf("unexpected err; got %v", err)
+	}
+
+	err = p.Update([]isenzo.Query{
+		isenzo.NewQuery("1", "foo:bar"),
+		isenzo.NewQuery("2", "bar"),
+		isenzo.NewQuery("3", "test"),
+	})
+	if err != nil {
+		t.Fatalf("unexpected err; got %v", err)
+	}
+
+	data := map[string]interface{}{"foo": "bar"}
+
+	results, err := p.Match(data)
+	if err != nil {
+		t.Fatalf("unexpected err; got %v", err)
+	}
+
+	if len(results.Errs) != 0 {
+		t.Fatalf("expected no errors; got %v", results.Errs)
+	}
+
+	if len(results.Ids) != 2 {
+		t.Fatalf("expected %d results; got %v", 2, len(results.Ids))
+	}
+}
+
+func TestPercolator_UpdateWithErrors(t *testing.T) {
+	p, err := isenzo.NewPercolator()
+	if err != nil {
+		t.Fatalf("unexpected err; got %v", err)
+	}
+
+	err = p.Update([]isenzo.Query{
+		isenzo.NewQuery("1", "+-"),
+	})
+	if err == nil {
+		t.Fatal("expected errors; got none")
+	}
+}
 
 func BenchmarkPercolator_1Rules(b *testing.B) {
 	b.ReportAllocs()
