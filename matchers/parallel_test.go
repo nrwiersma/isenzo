@@ -42,8 +42,8 @@ func (f waitMatcherFactory) New(doc interface{}) (matchers.Matcher, error) {
 	}, nil
 }
 
-func (f waitMatcherFactory) Map(doc interface{}) interface{} {
-	return doc
+func (f waitMatcherFactory) Map(doc interface{}) (interface{}, error) {
+	return doc, nil
 }
 
 type waitMatcher struct {

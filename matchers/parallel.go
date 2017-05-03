@@ -33,28 +33,32 @@ func (f ParallelMatcherFactory) New(doc interface{}) (Matcher, error) {
 		taskCh:   make(chan task, 1024),
 	}
 
+	var err error
+	if doc, err = f.Map(doc); err != nil {
+		return nil, err
+	}
+
 	for i := 0; i < f.threads; i++ {
-		matcher, err := f.factory.New(doc)
+		m.matchers[i], err = f.factory.New(doc)
 		if err != nil {
 			return nil, err
 		}
-		m.matchers[i] = matcher
 
 		m.wg.Add(1)
-		go func() {
+		go func(matcher Matcher) {
 			defer m.wg.Done()
 
 			for t := range m.taskCh {
 				matcher.Match(t.Id, t.Query)
 			}
-		}()
+		}(m.matchers[i])
 	}
 
 	return m, nil
 }
 
 // Map maps a document for the matcher.
-func (f ParallelMatcherFactory) Map(doc interface{}) interface{} {
+func (f ParallelMatcherFactory) Map(doc interface{}) (interface{}, error) {
 	return f.factory.Map(doc)
 }
 

@@ -21,6 +21,7 @@ var (
 	ErrorIndexClosed = errors.New("index is closed")
 )
 
+// Index is a stripped down version on bleve.Index
 type Index struct {
 	i     index.Index
 	m     mapping.IndexMapping

@@ -105,6 +105,6 @@ func (p *Percolator) Match(doc map[string]interface{}) (*Results, error) {
 		Ids:        ids,
 		Errs:       errs,
 		Took:       time.Since(startMatch),
-		QueriesRun: len(p.cache),
+		QueriesRun: -1,
 	}, nil
 }

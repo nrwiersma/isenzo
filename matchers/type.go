@@ -10,7 +10,7 @@ type Factory interface {
 	New(doc interface{}) (Matcher, error)
 
 	// Map maps a document for the matcher.
-	Map(doc interface{}) interface{}
+	Map(doc interface{}) (interface{}, error)
 }
 
 // Matcher represents a query matcher
