@@ -9,13 +9,9 @@ A [bleve](https://github.com/blevesearch/bleve) based Percolator.
 Traditionally search engines search many documents with one query. A Percolator runs many queries against one document
 and acts on the matched query/queries.
 
-**Note:** This is still a work in progress.
-
-### TODO
-
-- [x] Matchers
-- [ ] Pre-search
-- [ ] Decomposition
+**Note:** This turns out to be a really bad idea in bleve. They seem to have attached
+the searchers to the Query rather then the index, like Lucene does. This creates 
+a massive number of allocs, causing the GC to pause in a bad way.
 
 ## License
 
