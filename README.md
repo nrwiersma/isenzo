@@ -1,4 +1,4 @@
-# Isenzo 
+![Logo](http://svg.wiersma.co.za/github/project?lang=go&title=isenzo&tag=reverse%20search%20engine)
 
 [![Build Status](https://travis-ci.org/nrwiersma/isenzo.svg?branch=master)](https://travis-ci.org/nrwiersma/isenzo)
 [![Coverage Status](https://coveralls.io/repos/github/nrwiersma/isenzo/badge.svg?branch=master)](https://coveralls.io/github/nrwiersma/isenzo?branch=master)
